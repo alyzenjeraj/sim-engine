@@ -147,3 +147,4 @@ This project teaches and reinforces:
 ## 🙌 Contributions Welcome
 
 This project is in early development and aims to grow into a full-featured research-quality simulation. Contributions, feature ideas, or feedback are highly encouraged.
+    

@@ -1,74 +1,45 @@
 use bevy::prelude::*;
-use std::sync::mpsc::{channel, Receiver, Sender};
-use std::thread;
-use std::time::Duration;
 
+// Velocity component for x, y, and theta (rotation) velocities
 #[derive(Component)]
-struct AgentSprite;
-
-#[derive(Debug, Clone, Copy)]
-struct AgentPosition {
-    x: f32,
-    y: f32,
-}
-
-#[derive(Resource)]
-struct AgentPositionReceiver {
-    rx: Receiver<AgentPosition>,
+struct Velocity {
+    pub x: f32,
+    pub y: f32,
+    pub theta: f32, // radians per second
 }
 
 fn main() {
-    let (tx, rx) = channel();
-
-    // Spawn the agent thread
-    thread::spawn(move || {
-        let mut x = -300.0;
-        let y = 0.0;
-
-        loop {
-            x += 1.0;
-            if x > 300.0 {
-                x = -300.0;
-            }
-
-            tx.send(AgentPosition { x, y }).unwrap();
-            thread::sleep(Duration::from_millis(16)); // ~60 FPS
-        }
-    });
-
     App::new()
         .add_plugins(DefaultPlugins)
-        .insert_resource(ClearColor(Color::BLACK))
-        .insert_resource(AgentPositionReceiver { rx })
+        .insert_resource(ClearColor(Color::srgb(0.1, 0.1, 0.1)))
         .add_systems(Startup, setup)
-        .add_systems(Update, update_agent_position)
+        .add_systems(Update, apply_velocity)
         .run();
 }
 
 fn setup(mut commands: Commands) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d::default());
 
     commands.spawn((
-        SpriteBundle {
-            sprite: Sprite {
-                color: Color::srgb(0.8, 0.2, 0.2),
-                custom_size: Some(Vec2::new(100.0, 100.0)),
-                ..default()
-            },
+        Sprite {
+            color: Color::srgb(0.8, 0.2, 0.2),
+            custom_size: Some(Vec2::new(100.0, 100.0)),
             ..default()
         },
-        AgentSprite,
+        Transform::from_xyz(0.0, 0.0, 0.0),
+        GlobalTransform::default(),
+        Velocity { x: -50.0, y: 0.0, theta: 0.5 }, // Example: move left and rotate
     ));
 }
 
-fn update_agent_position(
-    mut query: Query<&mut Transform, With<AgentSprite>>,
-    rx: Res<AgentPositionReceiver>,
+// System to apply velocity to all entities with Velocity and Transform
+fn apply_velocity(
+    time: Res<Time>,
+    mut query: Query<(&mut Transform, &Velocity)>,
 ) {
-    if let Ok(position) = rx.rx.try_recv() {
-        if let Ok(mut transform) = query.get_single_mut() {
-            transform.translation.x = position.x;
-            transform.translation.y = position.y;
-        }
+    for (mut transform, velocity) in &mut query {
+        transform.translation.x += velocity.x * time.delta_secs();
+        transform.translation.y += velocity.y * time.delta_secs();
+        transform.rotation = transform.rotation * Quat::from_rotation_z(velocity.theta * time.delta_secs());
     }
 }

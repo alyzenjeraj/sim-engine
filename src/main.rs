@@ -28,7 +28,7 @@ fn setup(mut commands: Commands) {
         },
         Transform::from_xyz(0.0, 0.0, 0.0),
         GlobalTransform::default(),
-        Velocity { x: -50.0, y: 0.0, theta: 0.5 }, // Example: move left and rotate
+        Velocity { x: 50.0, y: 10.0, theta: 0.5 }, // Example: move left and rotate
     ));
 }
 

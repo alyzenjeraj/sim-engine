@@ -1,5 +1,8 @@
 use bevy::prelude::*;
 
+#[derive(Component)]
+struct Agent;
+
 // Velocity component for x, y, and theta (rotation) velocities
 #[derive(Component)]
 struct Velocity {
@@ -29,6 +32,7 @@ fn setup(mut commands: Commands) {
         Transform::from_xyz(0.0, 0.0, 0.0),
         GlobalTransform::default(),
         Velocity { x: 50.0, y: 10.0, theta: 0.5 }, // Example: move left and rotate
+        Agent, // Add Agent component - marker to signify the roles of this entity
     ));
 
     commands.spawn((
@@ -46,7 +50,7 @@ fn setup(mut commands: Commands) {
 // System to apply velocity to all entities with Velocity and Transform
 fn apply_velocity(
     time: Res<Time>,
-    mut query: Query<(&mut Transform, &Velocity)>,
+    mut query: Query<(&mut Transform, &Velocity), With<Agent>>,
 ) {
     for (mut transform, velocity) in &mut query {
         transform.translation.x += velocity.x * time.delta_secs();

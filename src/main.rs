@@ -30,6 +30,17 @@ fn setup(mut commands: Commands) {
         GlobalTransform::default(),
         Velocity { x: 50.0, y: 10.0, theta: 0.5 }, // Example: move left and rotate
     ));
+
+    commands.spawn((
+        Sprite {
+            color: Color::srgb(0.6, 0.4, 0.4),
+            custom_size: Some(Vec2::new(100.0, 100.0)),
+            ..default()
+        },
+        Transform::from_xyz(0.0, 0.0, 0.0),
+        GlobalTransform::default(),
+        Velocity { x: -50.0, y: 10.0, theta: 0.5 }, // Example: move left and rotate
+    ));
 }
 
 // System to apply velocity to all entities with Velocity and Transform

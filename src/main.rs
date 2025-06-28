@@ -1,7 +1,10 @@
 use bevy::prelude::*;
-use std::sync::{mpsc::{channel, Receiver, Sender}, Arc, Mutex};
 use std::thread;
 use std::time::Duration;
+use std::sync::{
+    mpsc::{channel, Receiver, Sender},
+    Arc, Mutex,
+};
 
 #[derive(Component)]
 struct Agent;
@@ -25,32 +28,61 @@ struct VelocityMsg {
 #[derive(Resource)]
 struct AgentVelocityReceiver {
     pub rx: Arc<Mutex<Receiver<VelocityMsg>>>,
-}   
+}
 
-
-
+struct AgentConfig {
+    id: i32,
+    initial_position: Transform,
+}
 
 fn main() {
     // Multi Producer, Single Consumer (MPSC) channel for sending velocities
-    let (tx, rx) : (Sender<VelocityMsg>, Receiver<VelocityMsg>) = channel();
+    let (tx, rx): (Sender<VelocityMsg>, Receiver<VelocityMsg>) = channel();
     let rx = Arc::new(Mutex::new(rx));
+
+    let tx2 = tx.clone();
 
     // Spawn single thread to temporarily simulate velocity updates
     thread::spawn(move || {
-        let mut t : f32 = 0.0;
-
+        let mut t: f32 = 0.0;
 
         loop {
-            let vx = -100.0 * t.cos(); 
+            let vx = -100.0 * t.cos();
             let vy = 50.0 * t.sin();
 
-            tx.send(VelocityMsg{entity_id: EntityId(1),velocity: Velocity {
-                x: vx,
-                y: vy,
-                theta: 0.1, // - test constant rotational speed
-            }}).unwrap();
+            tx.send(VelocityMsg {
+                entity_id: EntityId(1),
+                velocity: Velocity {
+                    x: vx,
+                    y: vy,
+                    theta: 0.1, // - test constant rotational speed
+                },
+            })
+            .unwrap();
 
             t += 0.01;
+            std::thread::sleep(Duration::from_millis(50)); // Simulate some delay
+        }
+    });
+
+    thread::spawn(move || {
+        let mut t: f32 = 0.0;
+
+        loop {
+            let vx = 100.0 * t.cos();
+            let vy = 50.0 * t.sin();
+
+            tx2.send(VelocityMsg {
+                entity_id: EntityId(2),
+                velocity: Velocity {
+                    x: vx,
+                    y: vy,
+                    theta: 0.1, // - test constant rotational speed
+                },
+            })
+            .unwrap();
+
+            t += 0.02;
             std::thread::sleep(Duration::from_millis(50)); // Simulate some delay
         }
     });
@@ -67,8 +99,21 @@ fn main() {
 fn setup(mut commands: Commands) {
     commands.spawn(Camera2d::default());
 
+    let agent_configs = [
+        AgentConfig {
+            id: 1,
+            initial_position: Transform::from_xyz(0.0, 0.0, 0.0),
+        },
+        AgentConfig {
+            id: 2,
+            initial_position: Transform::from_xyz(1.0, 0.0, 0.0),
+        },
+    ]
+
+    spawn_entities(&commands, &agent_configs);
+
     commands.spawn((
-        EntityId(1), 
+        EntityId(1),
         Sprite {
             color: Color::srgb(0.8, 0.2, 0.2),
             custom_size: Some(Vec2::new(100.0, 100.0)),
@@ -76,11 +121,16 @@ fn setup(mut commands: Commands) {
         },
         Transform::from_xyz(0.0, 0.0, 0.0),
         GlobalTransform::default(),
-        Velocity { x: 50.0, y: 10.0, theta: 0.5 }, // Example: move left and rotate
-        Agent, // Add Agent component - marker to signify the roles of this entity
+        Velocity {
+            x: 50.0,
+            y: 10.0,
+            theta: 0.5,
+        },
+        Agent,
     ));
 
     commands.spawn((
+        EntityId(2),
         Sprite {
             color: Color::srgb(0.6, 0.4, 0.4),
             custom_size: Some(Vec2::new(100.0, 100.0)),
@@ -88,8 +138,19 @@ fn setup(mut commands: Commands) {
         },
         Transform::from_xyz(0.0, 0.0, 0.0),
         GlobalTransform::default(),
-        Velocity { x: 50.0, y: 10.0, theta: 0.5 }, // Example: move left and rotate
+        Velocity {
+            x: 50.0,
+            y: 10.0,
+            theta: 0.5,
+        }, // Example: move left and rotate
+        Agent,
     ));
+}
+
+fn spawn_entities(&mut command: Command, agent_configs: &[AgentConfig]) {
+    for config in agent_configs {
+
+    }
 }
 
 fn receive_and_apply_velocity(
@@ -97,23 +158,22 @@ fn receive_and_apply_velocity(
     mut query: Query<(&mut Velocity, &EntityId), With<Agent>>,
 ) {
     if let Ok(rx) = rx.rx.lock() {
-    while let Ok(msg) = rx.try_recv() {
-        for (mut velocity, id) in &mut query {
-            if id.0 == msg.entity_id.0 {
-                *velocity = msg.velocity.clone(); // Update the velocity of the entity with matching ID
+        while let Ok(msg) = rx.try_recv() {
+            for (mut velocity, id) in &mut query {
+                if id.0 == msg.entity_id.0 {
+                    *velocity = msg.velocity.clone();
+                }
             }
         }
-    }}
+    }
 }
 
 // System to apply velocity to all entities with Velocity and Transform
-fn apply_velocity(
-    time: Res<Time>,
-    mut query: Query<(&mut Transform, &Velocity), With<Agent>>,
-) {
+fn apply_velocity(time: Res<Time>, mut query: Query<(&mut Transform, &Velocity), With<Agent>>) {
     for (mut transform, velocity) in &mut query {
         transform.translation.x += velocity.x * time.delta_secs();
         transform.translation.y += velocity.y * time.delta_secs();
-        transform.rotation = transform.rotation * Quat::from_rotation_z(velocity.theta * time.delta_secs());
+        transform.rotation =
+            transform.rotation * Quat::from_rotation_z(velocity.theta * time.delta_secs());
     }
 }

@@ -6,6 +6,12 @@ use std::sync::{
     Arc, Mutex,
 };
 
+// High Level Components to Add:
+// Robot Manager - is a thread applied for each robot to command its movements
+// Do I need to implement some type of state machine here?
+// Localized mission planner? Or a global one for this
+// Definitely need a way to handle race conditions of having multiple simulatenous requests for reservations
+
 #[derive(Component)]
 struct Agent;
 

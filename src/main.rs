@@ -20,6 +20,10 @@ use std::sync::{
 // Path Following - this is a separate system that will be used to follow paths for the robots
 // Charging
 
+// The main draw of this project is the map manager - what allows the path edge reservations
+// Howo do we make this atomic? How do we handle multiple recurring requests?
+// Perhaps we also need some type of exposed API to call the robots and request paths - Or probably use BEVY ECS for this
+
 
 #[derive(Component)]
 struct Agent;

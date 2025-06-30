@@ -10,7 +10,16 @@ use std::sync::{
 // Robot Manager - is a thread applied for each robot to command its movements
 // Do I need to implement some type of state machine here?
 // Localized mission planner? Or a global one for this
-// Definitely need a way to handle race conditions of having multiple simulatenous requests for reservations
+// Definitely need a way to handle race conditions of having multiple simulatenous requests for reservations   
+
+// Global manager? Oor a type of map manager
+// States for bots:
+// Idle/Stopped
+// Free Roam - consider a hierarchical state machine
+// Path Planning - this is a separate system that will be used to plan paths for the robots
+// Path Following - this is a separate system that will be used to follow paths for the robots
+// Charging
+
 
 #[derive(Component)]
 struct Agent;

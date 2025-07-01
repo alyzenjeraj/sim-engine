@@ -1,113 +1,16 @@
 use bevy::prelude::*;
-use std::thread;
-use std::time::Duration;
-use std::sync::{
-    mpsc::{channel, Receiver, Sender},
-    Arc, Mutex,
-};
+use std::sync::{mpsc::channel, Arc, Mutex};
 
-// High Level Components to Add:
-// Robot Manager - is a thread applied for each robot to command its movements
-// Do I need to implement some type of state machine here?
-// Localized mission planner? Or a global one for this
-// Definitely need a way to handle race conditions of having multiple simulatenous requests for reservations   
+mod agent;
+mod messaging;
 
-// Global manager? Oor a type of map manager
-// States for bots:
-// Idle/Stopped
-// Free Roam - consider a hierarchical state machine
-// Path Planning - this is a separate system that will be used to plan paths for the robots
-// Path Following - this is a separate system that will be used to follow paths for the robots
-// Charging
-
-// The main draw of this project is the map manager - what allows the path edge reservations
-// Howo do we make this atomic? How do we handle multiple recurring requests?
-// Perhaps we also need some type of exposed API to call the robots and request paths - Or probably use BEVY ECS for this
-
-
-#[derive(Component)]
-struct Agent;
-
-// Velocity component for x, y, and theta (rotation) velocities
-#[derive(Component, Clone)]
-struct Velocity {
-    pub x: f32,
-    pub y: f32,
-    pub theta: f32, // radians per second
-}
-
-#[derive(Component)]
-struct EntityId(i32);
-
-struct VelocityMsg {
-    entity_id: EntityId,
-    velocity: Velocity,
-}
-
-#[derive(Resource)]
-struct AgentVelocityReceiver {
-    pub rx: Arc<Mutex<Receiver<VelocityMsg>>>,
-}
-
-struct AgentConfig {
-    id: i32,
-    initial_position: Vec2,
-}
-
-#[derive(Resource, Clone)]
-struct VelocityMsgSender(pub Sender<VelocityMsg>);
+use agent::{spawn_agents, Agent, AgentConfig, EntityId, Velocity};
+use messaging::{AgentVelocityReceiver, VelocityMsg, VelocityMsgSender};
 
 fn main() {
     // Multi Producer, Single Consumer (MPSC) channel for sending velocities
-    let (tx, rx): (Sender<VelocityMsg>, Receiver<VelocityMsg>) = channel();
+    let (tx, rx) = channel::<VelocityMsg>();
     let rx = Arc::new(Mutex::new(rx));
-
-    // let tx2 = tx.clone();
-
-    // // Spawn single thread to temporarily simulate velocity updates
-    // thread::spawn(move || {
-    //     let mut t: f32 = 0.0;
-
-    //     loop {
-    //         let vx = -100.0 * t.cos();
-    //         let vy = 50.0 * t.sin();
-
-    //         tx.send(VelocityMsg {
-    //             entity_id: EntityId(1),
-    //             velocity: Velocity {
-    //                 x: vx,
-    //                 y: vy,
-    //                 theta: 0.1, // - test constant rotational speed
-    //             },
-    //         })
-    //         .unwrap();
-
-    //         t += 0.01;
-    //         std::thread::sleep(Duration::from_millis(50)); // Simulate some delay
-    //     }
-    // });
-
-    // thread::spawn(move || {
-    //     let mut t: f32 = 0.0;
-
-    //     loop {
-    //         let vx = 100.0 * t.cos();
-    //         let vy = 50.0 * t.sin();
-
-    //         tx2.send(VelocityMsg {
-    //             entity_id: EntityId(2),
-    //             velocity: Velocity {
-    //                 x: vx,
-    //                 y: vy,
-    //                 theta: 0.1, // - test constant rotational speed
-    //             },
-    //         })
-    //         .unwrap();
-
-    //         t += 0.02;
-    //         std::thread::sleep(Duration::from_millis(50)); // Simulate some delay
-    //     }
-    // });
 
     App::new()
         .add_plugins(DefaultPlugins)
@@ -134,87 +37,6 @@ fn setup(mut commands: Commands, tx: Res<VelocityMsgSender>) {
     ];
 
     spawn_agents(&mut commands, &agent_configs, &tx.0);
-
-    // commands.spawn((
-    //     EntityId(1),
-    //     Sprite {
-    //         color: Color::srgb(0.8, 0.2, 0.2),
-    //         custom_size: Some(Vec2::new(100.0, 100.0)),
-    //         ..default()
-    //     },
-    //     Transform::from_xyz(0.0, 0.0, 0.0),
-    //     GlobalTransform::default(),
-    //     Velocity {
-    //         x: 50.0,
-    //         y: 10.0,
-    //         theta: 0.5,
-    //     },
-    //     Agent,
-    // ));
-
-    // commands.spawn((
-    //     EntityId(2),
-    //     Sprite {
-    //         color: Color::srgb(0.6, 0.4, 0.4),
-    //         custom_size: Some(Vec2::new(100.0, 100.0)),
-    //         ..default()
-    //     },
-    //     Transform::from_xyz(0.0, 0.0, 0.0),
-    //     GlobalTransform::default(),
-    //     Velocity {
-    //         x: 50.0,
-    //         y: 10.0,
-    //         theta: 0.5,
-    //     }, // Example: move left and rotate
-    //     Agent,
-    // ));
-}
-
-fn spawn_agents(commands: &mut Commands, agent_configs: &[AgentConfig], tx: &Sender<VelocityMsg>) {
-    for config in agent_configs {
-        let tx_child = tx.clone();
-        let id = config.id;
-
-        commands.spawn((
-        EntityId(config.id),
-        Sprite {
-            color: Color::srgb(0.8, 0.2, 0.2),
-            custom_size: Some(Vec2::new(100.0, 100.0)),
-            ..default()
-        },
-        Transform::from_xyz(config.initial_position.x, config.initial_position.y, 0.0),
-        GlobalTransform::default(),
-        Velocity {
-            x: 0.0,
-            y: 0.0,
-            theta: 0.0,
-        },
-        Agent,
-    ));
-
-    thread::spawn(move || {
-        let mut t: f32 = 0.0;
-
-        loop {
-            let vx = 100.0 * t.cos();
-            let vy = 50.0 * t.sin();
-
-            tx_child.send(VelocityMsg {
-                entity_id: EntityId(id),
-                velocity: Velocity {
-                    x: vx,
-                    y: vy,
-                    theta: 0.1, // - test constant rotational speed
-                },
-            })
-            .unwrap();
-
-            t += 0.02;
-            std::thread::sleep(Duration::from_millis(50)); // Simulate some delay
-        }
-    });
-
-    }
 }
 
 fn receive_and_apply_velocity(
@@ -238,6 +60,6 @@ fn apply_velocity(time: Res<Time>, mut query: Query<(&mut Transform, &Velocity),
         transform.translation.x += velocity.x * time.delta_secs();
         transform.translation.y += velocity.y * time.delta_secs();
         transform.rotation =
-            transform.rotation * Quat::from_rotation_z(velocity.theta * time.delta_secs());
+            transform.rotation * Quat::from_rotation_z(velocity.theta_rad * time.delta_secs());
     }
 }

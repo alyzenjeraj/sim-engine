@@ -13,7 +13,7 @@ pub fn spawn_agents(commands: &mut Commands, agent_configs: &[AgentConfig], tx: 
         commands.spawn((
         EntityId(config.id),
         Sprite {
-            color: Color::srgb(0.8, 0.2, 0.2),
+            color: config.color,
             custom_size: Some(Vec2::new(100.0, 100.0)),
             ..default()
         },

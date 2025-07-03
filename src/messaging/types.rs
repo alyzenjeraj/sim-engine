@@ -1,6 +1,6 @@
-use bevy::prelude::*;
-use std::sync::{Arc, Mutex, mpsc::Receiver, mpsc::Sender};
 use crate::agent::components::{EntityId, Velocity};
+use bevy::prelude::*;
+use std::sync::{mpsc::Receiver, mpsc::Sender, Arc, Mutex};
 
 pub struct VelocityMsg {
     pub entity_id: EntityId,

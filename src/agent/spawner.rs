@@ -9,6 +9,7 @@ pub fn spawn_agents(commands: &mut Commands, agent_configs: &[AgentConfig], tx: 
     for config in agent_configs {
         let tx_child = tx.clone();
         let id = config.id;
+        let time_step = config.time_step;
 
         commands.spawn((
         EntityId(config.id),
@@ -44,7 +45,7 @@ pub fn spawn_agents(commands: &mut Commands, agent_configs: &[AgentConfig], tx: 
             })
             .unwrap();
 
-            t += 0.02;
+            t += time_step;
             std::thread::sleep(Duration::from_millis(50)); 
         }
     });

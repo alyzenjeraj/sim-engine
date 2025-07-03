@@ -17,4 +17,5 @@ pub struct AgentConfig {
     pub id: i32,
     pub initial_position: Vec2,
     pub color: Color,
+    pub time_step: f32, // seconds
 }

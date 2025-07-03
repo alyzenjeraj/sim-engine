@@ -30,11 +30,13 @@ fn setup(mut commands: Commands, tx: Res<VelocityMsgSender>) {
             id: 1,
             initial_position: Vec2::new(0.0, 0.0),
             color: Color::srgb(0.8, 0.2, 0.2),
+            time_step: 0.1, 
         },
         AgentConfig {
             id: 2,
             initial_position: Vec2::new(0.1, 0.1),
             color: Color::srgb(0.2, 0.8, 0.2),
+            time_step: 0.01
         },
     ];
 

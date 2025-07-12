@@ -42,3 +42,14 @@ src/
 // The main draw of this project is the map manager - what allows the path edge reservations
 // Howo do we make this atomic? How do we handle multiple recurring requests?
 // Perhaps we also need some type of exposed API to call the robots and request paths - Or probably use BEVY ECS for this
+
+// I want this to be a traffic simulator
+-  [ ] some way to define a map in a JSON or yaml file? Maybe some other serialization tech
+- graphically generate the track
+- define lanes
+- one way or 2 ways streets
+- junctions
+- homes
+- charging/gas stations
+
+Should I just give up on this multi threaded approahc and use the bevy and built in behaviour

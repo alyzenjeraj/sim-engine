@@ -53,3 +53,7 @@ src/
 - charging/gas stations
 
 Should I just give up on this multi threaded approahc and use the bevy and built in behaviour
+
+What are my intentions with this project?
+
+Robot control is a large component, but i want to priotize multi threaded commmunication and thread safe structures. I think I should retain this and put in more thoughts into how to exaclty design thsi to be thread safe and free fo deadlocks. I also know I should probably be diving more into C++ but thats fine. Im working with what we got.

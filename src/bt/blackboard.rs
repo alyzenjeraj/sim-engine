@@ -1,5 +1,5 @@
 #[derive(Debug)]
-pub enum Blackboard {
+pub struct Blackboard {
     pub has_goal: bool,
     pub at_goal: bool,
     pub path: Vec<usize>,

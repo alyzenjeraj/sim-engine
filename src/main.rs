@@ -3,6 +3,7 @@ use std::sync::{mpsc::channel, Arc, Mutex};
 
 mod agent;
 mod messaging;
+mod btree;
 
 use agent::{spawn_agents, Agent, AgentConfig, EntityId, Velocity};
 use messaging::{AgentVelocityReceiver, VelocityMsg, VelocityMsgSender};

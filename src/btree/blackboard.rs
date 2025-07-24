@@ -4,5 +4,5 @@ pub struct Blackboard {
     pub at_goal: bool,
     pub path: Vec<usize>,
     pub path_index: usize,
-    AgentId: usize,
+    AgentIdd: usize,
 }

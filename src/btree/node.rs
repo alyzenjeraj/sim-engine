@@ -1,6 +1,6 @@
-use super::result::BTreeResult;
+use super::result::BTResult;
 use super::blackboard::Blackboard;
 
 pub trait BehaviourNode {
-    fn tick(&mut self, blackboard: &mut Blackboard) -> BTreeResult;
+    fn tick(&mut self, blackboard: &mut Blackboard) -> BTResult;
 }

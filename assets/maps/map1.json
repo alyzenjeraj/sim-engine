@@ -1,43 +1,45 @@
 {
   "mapName": "SimpleSquare",
   "nodes": [
+    { "id": 1, "variant": "HOME", "pose": { "x": 0.0, "y": 0.0, "theta": 0.0 } },
+    { "id": 2, "variant": "CHARGER", "pose": { "x": 10.0, "y": 0.0, "theta": 0.0 } },
+    { "id": 3, "variant": "STOPLIGHT", "pose": { "x": 10.0, "y": 10.0, "theta": 1.57 } },
+    { "id": 4, "variant": "HOME", "pose": { "x": 0.0, "y": 10.0, "theta": 3.14 } }
+  ],
+  "roads": [
     {
       "id": 1,
-      "type": "HOME",
-      "x": 0.0,
-      "y": 0.0,
-      "theta": 0.0
+      "nodes": [1, 2],
+      "bidirectional": true,
+      "lanes": [
+        { "id": "1a", "index": 0, "direction": "forward", "speed_limit": 5.0 },
+        { "id": "1b", "index": 1, "direction": "forward", "speed_limit": 5.0 }
+      ]
     },
     {
       "id": 2,
-      "type": "CHARGER",
-      "x": 10.0,
-      "y": 0.0,
-      "theta": 0.0
+      "nodes": [2, 3],
+      "bidirectional": true,
+      "lanes": [
+        { "id": "2a", "index": 0, "direction": "forward", "speed_limit": 5.0 }
+      ]
     },
     {
       "id": 3,
-      "type": "STOPLIGHT",
-      "x": 10.0,
-      "y": 10.0,
-      "theta": 1.57
-    }
-  ],
-  "lanes": [
-    {
-      "laneNum": 1,
-      "bidirectional": false,
-      "nodes": [1, 2]
+      "nodes": [3, 4],
+      "bidirectional": true,
+      "lanes": [
+        { "id": "3a", "index": 0, "direction": "forward", "speed_limit": 5.0 },
+        { "id": "3b", "index": 1, "direction": "forward", "speed_limit": 5.0 }
+      ]
     },
     {
-      "laneNum": 2,
-      "bidirectional": false,
-      "nodes": [2, 3]
-    },
-    {
-      "laneNum": 1,
-      "bidirectional": false,
-      "nodes": [3, 1]
+      "id": 4,
+      "nodes": [4, 1],
+      "bidirectional": true,
+      "lanes": [
+        { "id": "4a", "index": 0, "direction": "forward", "speed_limit": 5.0 }
+      ]
     }
   ]
 }

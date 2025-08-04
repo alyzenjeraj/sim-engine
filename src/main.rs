@@ -7,6 +7,7 @@ mod btree;
 
 use agent::{spawn_agents, Agent, AgentConfig, EntityId, Velocity};
 use messaging::{AgentVelocityReceiver, VelocityMsg, VelocityMsgSender};
+use map::{MapData, render_map};
 
 fn main() {
     // Multi Producer, Single Consumer (MPSC) channel for sending velocities
@@ -18,7 +19,9 @@ fn main() {
         .insert_resource(ClearColor(Color::srgb(0.1, 0.1, 0.1)))
         .insert_resource(AgentVelocityReceiver { rx })
         .insert_resource(VelocityMsgSender(tx.clone()))
+        .insert_resource(MapData::parse_file("maps/map1.json"))
         .add_systems(Startup, setup)
+        .add_systems(Startup, render_map)
         .add_systems(Update, (receive_and_apply_velocity, apply_velocity))
         .run();
 }

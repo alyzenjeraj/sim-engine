@@ -1,34 +1,47 @@
 use serde::Deserialize;
 use std::fs::File;
-use std::io::BufReader;
 
-#[derive(Debug, Deserialize)]
-pub struct Map {
-    pub mapName: String,
-    pub nodes: Vec<Node>,
-    pub lanes: Vec<Lane>,
+#[derive(Deserialize, Debug)]
+pub struct Pose {
+    pub x: f64,
+    pub y: f64,
+    pub theta: f64,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct Node {
-    pub id: i32,
-    #[serde(rename = "type")]
-    pub node_type: String,
-    pub x: f32,
-    pub y: f32,
-    pub theta: f32,
+    pub id: u32,
+    pub pose: Pose,
+    pub variant: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Lane {
-    pub laneNum: i32,
-    pub bidirectional: bool,
-    pub nodes: [i32; 2],
+    pub id: String,
+    pub index: u32,
+    pub direction: String,
+    pub speed_limit: f32,
 }
 
-pub fn load_map_from_file(path: &str) -> Result<Map, Box<dyn std::error::Error>> {
-    let file = File::open(path)?;
-    let reader = BufReader::new(file);
-    let map = serde_json::from_reader(reader)?;
-    Ok(map)
+#[derive(Debug, Deserialize)]
+pub struct Road {
+    pub id: u32,
+    pub nodes: [u32; 2],
+    pub bidirectional: bool,
+    pub lanes: Vec<Lane>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct MapData {
+    pub mapName: String,
+    pub nodes: Vec<Node>,
+    pub roads: Vec<Road>,
+}
+
+impl MapData {
+    pub fn parse_file(path: &str) -> Self {
+        let file_path = format!("assets/maps/{}", path);
+        let file = File::open(file_path).expect("Failed to open map file");
+        serde_json::from_reader(file).expect("Failed to parse map file")
+    }
 }

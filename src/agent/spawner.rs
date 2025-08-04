@@ -19,7 +19,7 @@ pub fn spawn_agents(
             EntityId(config.id),
             Sprite {
                 color: config.color,
-                custom_size: Some(Vec2::new(100.0, 100.0)),
+                custom_size: Some(Vec2::new(10.0, 10.0)),
                 ..default()
             },
             Transform::from_xyz(config.initial_position.x, config.initial_position.y, 0.0),

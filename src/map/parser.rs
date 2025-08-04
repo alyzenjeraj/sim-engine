@@ -1,11 +1,12 @@
+use bevy::prelude::*;
 use serde::Deserialize;
 use std::fs::File;
 
 #[derive(Deserialize, Debug)]
 pub struct Pose {
-    pub x: f64,
-    pub y: f64,
-    pub theta: f64,
+    pub x: f32,
+    pub y: f32,
+    pub theta: f32,
 }
 
 #[derive(Deserialize, Debug)]
@@ -31,9 +32,9 @@ pub struct Road {
     pub lanes: Vec<Lane>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Resource)]
 pub struct MapData {
-    pub mapName: String,
+    pub map_name: String,
     pub nodes: Vec<Node>,
     pub roads: Vec<Road>,
 }

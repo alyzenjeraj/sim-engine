@@ -1,13 +1,15 @@
 use bevy::prelude::*;
+use bevy_prototype_lyon::prelude::*;
 use std::sync::{mpsc::channel, Arc, Mutex};
 
 mod agent;
-mod messaging;
 mod btree;
+mod map;
+mod messaging;
 
 use agent::{spawn_agents, Agent, AgentConfig, EntityId, Velocity};
+use map::{render_map, MapData};
 use messaging::{AgentVelocityReceiver, VelocityMsg, VelocityMsgSender};
-use map::{MapData, render_map};
 
 fn main() {
     // Multi Producer, Single Consumer (MPSC) channel for sending velocities
@@ -16,10 +18,11 @@ fn main() {
 
     App::new()
         .add_plugins(DefaultPlugins)
+        .add_plugins(ShapePlugin)
         .insert_resource(ClearColor(Color::srgb(0.1, 0.1, 0.1)))
         .insert_resource(AgentVelocityReceiver { rx })
         .insert_resource(VelocityMsgSender(tx.clone()))
-        .insert_resource(MapData::parse_file("maps/map1.json"))
+        .insert_resource(MapData::parse_file("map1.json"))
         .add_systems(Startup, setup)
         .add_systems(Startup, render_map)
         .add_systems(Update, (receive_and_apply_velocity, apply_velocity))

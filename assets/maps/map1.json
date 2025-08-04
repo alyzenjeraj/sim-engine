@@ -1,5 +1,5 @@
 {
-  "mapName": "SimpleSquare",
+  "map_name": "SimpleSquare",
   "nodes": [
     { "id": 1, "variant": "HOME", "pose": { "x": 0.0, "y": 0.0, "theta": 0.0 } },
     { "id": 2, "variant": "CHARGER", "pose": { "x": 10.0, "y": 0.0, "theta": 0.0 } },

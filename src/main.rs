@@ -1,9 +1,12 @@
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
+use bevy::input::mouse::{MouseWheel, MouseMotion};
+use bevy::input::ButtonInput;
+use bevy::input::mouse::MouseButton;
 use std::sync::{mpsc::channel, Arc, Mutex};
 
 mod agent;
-mod btree;
+// mod btree;
 mod map;
 mod messaging;
 
@@ -26,7 +29,44 @@ fn main() {
         .add_systems(Startup, setup)
         .add_systems(Startup, render_map)
         .add_systems(Update, (receive_and_apply_velocity, apply_velocity))
+        .add_systems(Update, camera_pan_zoom)
         .run();
+// Camera pan and zoom system
+use bevy::render::camera::{Camera, Projection, OrthographicProjection};
+
+fn camera_pan_zoom(
+    mouse_button_input: Res<ButtonInput<MouseButton>>,
+    mut mouse_motion_events: EventReader<MouseMotion>,
+    mut mouse_wheel_events: EventReader<MouseWheel>,
+    mut query: Query<(&mut Transform, &mut Projection), With<Camera2d>>,
+) {
+    let mut pan_delta = Vec2::ZERO;
+    // Only pan if left mouse button is pressed
+    if mouse_button_input.pressed(MouseButton::Left) {
+        for event in mouse_motion_events.read() {
+            pan_delta += event.delta;
+        }
+    }
+
+    let mut zoom_delta = 0.0;
+    for event in mouse_wheel_events.read() {
+        zoom_delta += event.y;
+    }
+
+    for (mut transform, mut projection) in &mut query {
+        if let Projection::Orthographic(ref mut ortho) = *projection {
+            // Pan
+            if pan_delta != Vec2::ZERO {
+                transform.translation.x -= pan_delta.x * ortho.scale;
+                transform.translation.y += pan_delta.y * ortho.scale;
+            }
+            // Zoom
+            if zoom_delta != 0.0 {
+                ortho.scale = (ortho.scale * (1.0 - zoom_delta * 0.1)).max(0.1);
+            }
+        }
+    }
+}
 }
 
 fn setup(mut commands: Commands, tx: Res<VelocityMsgSender>) {
